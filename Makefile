@@ -24,14 +24,17 @@ endif
 CFLAGS += -Ider_libs
 IFLAGS += -Ider_libs
 LiFLAGS += -Ider_libs
+CFLAGS += -DSTANDALONE
+LFLAGS += -DSTANDALONE
 
 ifeq ($(USE_UNICODE),YES)
 CFLAGS += -DUNICODE -D_UNICODE
 LiFLAGS += -dUNICODE -d_UNICODE
 LFLAGS += -dUNICODE -d_UNICODE
+IFLAGS += -DUNICODE -D_UNICODE
 endif
 
-CPPSRC=qualify.cpp \
+CPPSRC=der_libs\qualify.cpp \
 der_libs\common_funcs.cpp \
 der_libs\conio_min.cpp 
 
@@ -88,6 +91,6 @@ $(BINX): $(OBJS)
 
 # DO NOT DELETE
 
-qualify.o: der_libs/common.h der_libs/conio_min.h
+der_libs\qualify.o: der_libs/common.h der_libs/conio_min.h der_libs/qualify.h
 der_libs\common_funcs.o: der_libs/common.h
 der_libs\conio_min.o: der_libs/common.h der_libs/conio_min.h
