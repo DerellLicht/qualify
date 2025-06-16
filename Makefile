@@ -34,6 +34,9 @@ LFLAGS += -dUNICODE -d_UNICODE
 IFLAGS += -DUNICODE -D_UNICODE
 endif
 
+# This is required for *some* versions of makedepend
+IFLAGS += -DNOMAKEDEPEND
+
 CPPSRC=der_libs\qualify.cpp \
 der_libs\common_funcs.cpp \
 der_libs\conio_min.cpp 
