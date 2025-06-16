@@ -2,6 +2,7 @@
 USE_DEBUG = NO
 USE_64BIT = NO
 USE_UNICODE = YES
+USE_LEGACY = YES
 
 ifeq ($(USE_64BIT),YES)
 TOOLS=d:\tdm64\bin
@@ -37,8 +38,17 @@ endif
 # This is required for *some* versions of makedepend
 IFLAGS += -DNOMAKEDEPEND
 
-CPPSRC=der_libs\qualify.cpp \
-der_libs\common_funcs.cpp \
+ifeq ($(USE_LEGACY),YES)
+CFLAGS += -DLEGACY_QUALIFY
+endif
+
+ifeq ($(USE_LEGACY),YES)
+CPPSRC=der_libs\qualify_orig.cpp 
+else
+CPPSRC=der_libs\qualify.cpp 
+endif
+
+CPPSRC += der_libs\common_funcs.cpp \
 der_libs\conio_min.cpp 
 
 OBJS = $(CPPSRC:.cpp=.o)
@@ -94,6 +104,7 @@ $(BINX): $(OBJS)
 
 # DO NOT DELETE
 
-der_libs\qualify.o: der_libs/common.h der_libs/conio_min.h der_libs/qualify.h
+der_libs\qualify_orig.o: der_libs/common.h der_libs/qualify.h
+der_libs\qualify_orig.o: der_libs/conio_min.h
 der_libs\common_funcs.o: der_libs/common.h
 der_libs\conio_min.o: der_libs/common.h der_libs/conio_min.h
