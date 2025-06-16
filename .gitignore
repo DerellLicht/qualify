@@ -1,5 +1,6 @@
 *.exe
 *.o
+*.bak
 _lint.tmp
 qualify.orig.cpp
 

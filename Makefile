@@ -31,7 +31,7 @@ LiFLAGS += -dUNICODE -d_UNICODE
 LFLAGS += -dUNICODE -d_UNICODE
 endif
 
-CPPSRC=read_tree.cpp \
+CPPSRC=qualify.cpp \
 der_libs\common_funcs.cpp \
 der_libs\conio_min.cpp 
 
@@ -88,7 +88,5 @@ $(BINX): $(OBJS)
 
 # DO NOT DELETE
 
-read_tree.o: der_libs/common.h der_libs/conio_min.h der_libs/qualify.h
 der_libs\common_funcs.o: der_libs/common.h
 der_libs\conio_min.o: der_libs/common.h der_libs/conio_min.h
-der_libs\qualify.o: der_libs/qualify.h
