@@ -25,10 +25,8 @@
 #include <windows.h>
 #include <stdio.h>
 #include <direct.h>     //  _getdrive()
-#include <sys/stat.h>
 #include <shlwapi.h>    // PathIsUNC(), etc
 #include <limits.h>
-// #include <tchar.h>
 #include <vector>
 #include <string>
 #include <memory> //  unique_ptr
@@ -37,11 +35,15 @@
 #ifndef _lint
 #include "conio_min.h"
 #endif
-// #include "qualify.h"
+
+#ifdef  STANDALONE
 #define  QUAL_WILDCARDS    0x01
 #define  QUAL_NO_PATH      0x02
 #define  QUAL_IS_FILE      0x04
 #define  QUAL_INV_DRIVE    0x80
+#else
+#include "qualify.h"
+#endif
 
 #ifndef UNICODE
 #error This program can only be used with UNICODE
@@ -60,9 +62,8 @@ unsigned qualify (std::wstring& input_path)
    wchar_t *pathptr = &path[0];
    // TCHAR *strptr, *srchptr ;
    DWORD plen;
-   int result ;
-   struct _stat my_stat ;
    unsigned len, qresult = 0;
+   std::size_t found ;
 
    if (input_path.empty()) {
       input_path = L"." ;
@@ -72,76 +73,79 @@ unsigned qualify (std::wstring& input_path)
    //  strings in quotes will also foil the DOS routines;
    //  strip out all double quotes
    //******************************************************
-   {  //  begin local context
-   std::size_t found = input_path.find_first_of(L"\"");
-   while (found != std::wstring::npos)
-   {
-     // str[found]='*';
-     input_path.erase(found, 1);
-     found = input_path.find_first_of(L"\"");
+   found = input_path.find_first_of(L"\"");
+   while (found != std::wstring::npos) {
+      // str[found]='*';
+      input_path.erase(found, 1);
+      found = input_path.find_first_of(L"\"");
    }
    // console->dputsf(_T("after quotes removed: [%s]\n"), input_path.c_str());
-   }  //  end local context
 
-   //******************************************************
-   //  get expanded path (this doesn't support UNC)
-   //******************************************************
-   plen = GetFullPathName (input_path.c_str(), MAX_PATH_LEN, (LPTSTR) pathptr, NULL);
-   if (plen == 0) {
-      return QUAL_NO_PATH;
-   }
-
-   len = wcslen (pathptr);
-   if (len == 3) {
-      wcscat (pathptr, L"*");
-      qresult |= QUAL_WILDCARDS;
-   }
-   else {
-      //  see if there are wildcards in argument.
-      //  If not, see whether path is a directory or a file,
-      //  or nothing.  If directory, append wildcard char
-      if (wcspbrk (pathptr, L"*?") == NULL) {
-         if (*(pathptr + len - 1) == L'\\') {
-            len--;
-            *(pathptr + len) = 0;
-         }
-
-         //  see what kind of file was requested
-         //  FindFirstFile doesn't work with UNC paths,
-         //  stat() doesn't either
-         // handle = FindFirstFile (pathptr, &fffdata);
-         if (PathIsUNC(pathptr)) {
-            if (PathIsDirectory(pathptr)) {
-               wcscpy (pathptr + len, L"\\*");   //lint !e669  possible overrun
-               qresult |= QUAL_WILDCARDS; //  wildcards are present.
-            } else if (PathFileExists(pathptr)) {
-               qresult |= QUAL_IS_FILE;   //  path exists as a normal file.
-            } else {
-               wcscpy (pathptr + len, L"\\*");   //lint !e669  possible overrun
-               qresult |= QUAL_WILDCARDS; //  wildcards are present.
-            }
-         } 
-         //  process drive-oriented (non-UNC) paths
-         else {
-            result = _wstat(pathptr, &my_stat) ;
-            if (result != 0) {
-               qresult |= QUAL_INV_DRIVE; //  path does not exist.
-            } else if (my_stat.st_mode & S_IFDIR) {
-               wcscpy (pathptr + len, L"\\*");   //lint !e669  possible overrun
-               qresult |= QUAL_WILDCARDS; //  wildcards are present.
-            } else {
-               qresult |= QUAL_IS_FILE;   //  path exists as a normal file.
-            }
-         }
+   //  check for raw drive spec (q: , etc)
+   if (input_path.length() == 2  &&  input_path[1] == L':') {
+      int drive = towlower(input_path[0]) ;
+      drive -= (97 - 1) ;  //  97 = 'a', +1 converts drive to start at 1 vs 0
+      // console->dputsf(L"drive spec [%d]: [%s]\n", drive, input_path.c_str());
+      wchar_t *p = _wgetdcwd(drive, pathptr, MAX_PATH_LEN);
+      if (p == NULL) {
+         return QUAL_INV_DRIVE;
       }
    }
-
-   //**********************************************
-   //  copy string back to input, then return
-   //**********************************************
-   // _tcscpy (argptr, pathptr);
+   else {
+      //******************************************************
+      //  get expanded path (this doesn't support UNC)
+      //******************************************************
+      plen = GetFullPathName (input_path.c_str(), MAX_PATH_LEN, (LPTSTR) pathptr, NULL);
+      if (plen == 0) {
+         return QUAL_NO_PATH;
+      }
+   }
    input_path = pathptr ;
- //exit_point:   //  jump here if input_path is already updated
+   // console->dputsf(L"qualify temp: [%s]\n", pathptr);
+
+   //  see if there are wildcards in argument.
+   //  If not, see whether path is a directory or a file,
+   //  or nothing.  If directory, append wildcard char
+   found = input_path.find_first_of(L"*?");
+   if (found == std::wstring::npos) {
+      len = input_path.length() ;
+      // if (*(pathptr + len - 1) == L'\\') {
+      if (input_path[len-1] == L'\\') {
+         len--;
+         //  this cause later append() to fail, because class
+         //  didn't know the object had been changed
+         // input_path[len] = 0 ;   
+         input_path.erase(len, 1);
+      }
+
+      //  what *should* I do with UNC paths ??
+      // if (PathIsUNC(pathptr)) {
+      //    if (PathIsDirectory(pathptr)) {
+      //       wcscpy (pathptr + len, L"\\*");   //lint !e669  possible overrun
+      //       qresult |= QUAL_WILDCARDS; //  wildcards are present.
+      //    } else if (PathFileExists(pathptr)) {
+      //       qresult |= QUAL_IS_FILE;   //  path exists as a normal file.
+      //    } else {
+      //       wcscpy (pathptr + len, L"\\*");   //lint !e669  possible overrun
+      //       qresult |= QUAL_WILDCARDS; //  wildcards are present.
+      //    }
+      // } 
+      // //  process drive-oriented (non-UNC) paths
+      // else {
+         // if (PathIsDirectory(pathptr)) {
+         if (PathIsDirectory(input_path.c_str())) {
+            input_path.append(L"\\*");
+            qresult |= QUAL_WILDCARDS; //  wildcards are present.
+         } else if (PathFileExists(input_path.c_str())) {
+            qresult |= QUAL_IS_FILE;   //  path exists as a normal file.
+         } else {
+            // what, exactly, *is* this ??
+            input_path.append(L"\\*");
+            qresult |= QUAL_WILDCARDS; //  wildcards are present.
+         }
+      // }
+   }
+
    return (qresult); //lint !e438  drive
 }
 
@@ -193,6 +197,11 @@ static std::vector<std::wstring> test_vectors {
    L".", 
    L"..",
    L"string\"with\"quotes",
+   L"c:",   //  c: without backslash, should use relative path
+   L"q:",   //  invalid drive should be detected
+   L"d:\\",
+   L"d:\\*",
+   L"f:\\Games\\",
 };
 
 //**********************************************************************************
