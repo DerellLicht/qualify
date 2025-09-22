@@ -104,6 +104,6 @@ $(BINX): $(OBJS)
 
 # DO NOT DELETE
 
-der_libs\qualify.o: der_libs/common.h der_libs/conio_min.h der_libs/qualify.h
+der_libs\qualify.o: der_libs/common.h der_libs/qualify.h
 der_libs\common_funcs.o: der_libs/common.h
 der_libs\conio_min.o: der_libs/common.h der_libs/conio_min.h
