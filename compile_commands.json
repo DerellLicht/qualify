@@ -1,0 +1,62 @@
+[
+ {
+  "directory": "D:\\SourceCode\\Git\\qualify",
+  "arguments": [
+   "D:/llvm/bin/i686-w64-mingw32-clang++.exe",
+   "-Wall",
+   "-s",
+   "-O3",
+   "-c",
+   "-Weffc++",
+   "-Wno-write-strings",
+   "-Ider_libs",
+   "-DSTANDALONE",
+   "-DUNICODE",
+   "-D_UNICODE",
+   "der_libs/qualify.cpp",
+   "-o",
+   "der_libs/qualify.o"
+  ],
+  "file": "der_libs/qualify.cpp"
+ },
+ {
+  "directory": "D:\\SourceCode\\Git\\qualify",
+  "arguments": [
+   "D:/llvm/bin/i686-w64-mingw32-clang++.exe",
+   "-Wall",
+   "-s",
+   "-O3",
+   "-c",
+   "-Weffc++",
+   "-Wno-write-strings",
+   "-Ider_libs",
+   "-DSTANDALONE",
+   "-DUNICODE",
+   "-D_UNICODE",
+   "der_libs/common_funcs.cpp",
+   "-o",
+   "der_libs/common_funcs.o"
+  ],
+  "file": "der_libs/common_funcs.cpp"
+ },
+ {
+  "directory": "D:\\SourceCode\\Git\\qualify",
+  "arguments": [
+   "D:/llvm/bin/i686-w64-mingw32-clang++.exe",
+   "-Wall",
+   "-s",
+   "-O3",
+   "-c",
+   "-Weffc++",
+   "-Wno-write-strings",
+   "-Ider_libs",
+   "-DSTANDALONE",
+   "-DUNICODE",
+   "-D_UNICODE",
+   "der_libs/conio_min.cpp",
+   "-o",
+   "der_libs/conio_min.o"
+  ],
+  "file": "der_libs/conio_min.cpp"
+ }
+]
