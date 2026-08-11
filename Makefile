@@ -4,11 +4,7 @@ USE_64BIT = NO
 USE_UNICODE = YES
 USE_LEGACY = NO
 
-ifeq ($(USE_64BIT),YES)
-TOOLS=d:/tdm64/bin
-else
-TOOLS=d:/tdm32/bin
-endif
+include ..\tool_select.mak 
 
 ifeq ($(USE_DEBUG),YES)
 CFLAGS = -Wall -g -c
@@ -19,9 +15,6 @@ LFLAGS = -s -O3
 endif
 CFLAGS += -Weffc++
 CFLAGS += -Wno-write-strings
-ifeq ($(USE_64BIT),YES)
-CFLAGS += -DUSE_64BIT
-endif
 CFLAGS += -Ider_libs
 IFLAGS += -Ider_libs
 LiFLAGS += -Ider_libs
