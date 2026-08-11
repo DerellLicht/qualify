@@ -48,11 +48,7 @@ OBJS = $(CPPSRC:.cpp=.o)
 
 BIN=qualify
 
-ifeq ($(USE_64BIT),NO)
 BINX = $(BIN).exe
-else
-BINX = $(BIN)64.exe
-endif
 
 LIBS=-lshlwapi
 
